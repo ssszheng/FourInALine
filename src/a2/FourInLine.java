@@ -356,15 +356,31 @@ public class FourInLine {
 	// Are there four pieces of the same colour in a line (in any direction)
 
 	public static boolean fourInALine(Piece piece, GameState game) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
+		//check diagonal 
+		boolean diagonal = fourDiagonal(piece,game);
+		//row
+		boolean row = fourInRow(piece,game);
+		//column
+		boolean col = fourInColumn(piece,game);
+		if(diagonal== true||row == true ||col ==true) {
+			return true;
+		}return false;
+		
 	}
 
 	// Who won the game. Returns an Optional since it could be that no one has won
-	// the
-	// game yet.
+	// the game yet.
 
 	public static Optional<Player> winner(GameState game) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
+		Optional<Player> winner = Optional.empty();
+		if (fourInALine(redPiece,game) == true) {
+			winner = Optional.of(redPlayer);
+		} else if (fourInALine(bluePiece,game) == true) {
+			winner = Optional.of(bluePlayer);
+		}
+		
+		
+		return winner;
 	}
 
 }

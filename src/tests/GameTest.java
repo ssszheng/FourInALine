@@ -55,7 +55,6 @@ public class GameTest {
 //    @Test
 //    public void testInitGame() {
 //        assertEquals(initGameState().size(), 7);
-//        System.out.print(initGameState());
 //        assertEquals(initGameState().stream().allMatch( c -> c.size() == 0), true);
 //    }
 //
@@ -81,11 +80,10 @@ public class GameTest {
 //    @Test
 //    public void testshowGameState() {
 //        TestBoard tb = new TestBoard("testdata/redWinsRow.txt");
-//          System.out.println(tb.strRep);
-//          assertEquals(showGameState(tb.board), tb.strRep);
+//        assertEquals(showGameState(tb.board), tb.strRep);
 //      
 //    }
-
+//
 //    @Test
 //    public void testPieceOf() {
 //        assertEquals(pieceOf(redPlayer), redPiece);
@@ -126,7 +124,6 @@ public class GameTest {
 //        
 //        assertEquals(allViableColumns(fullBoard).isEmpty(), true);
 //        GameState notFullBoard = (new TestBoard("testdata/redWinsRow.txt")).board;
-//        System.err.println(allViableColumns(notFullBoard));
 //        assertEquals(allViableColumns(notFullBoard).size(), 6);
 //    }
 //    @Test
@@ -164,19 +161,19 @@ public class GameTest {
 //        assertEquals(fourInRow(redPiece, fourInRow), false);
 //
 //    }
-    @Test
-    public void testFourDiagonal() {
-        GameState fourDiagonalBoard = new TestBoard("testdata/fourDiagonal.txt").board;
-        GameState fd2 = new TestBoard("testdata/fourDiagonal2.txt").board;
-        GameState fd3 = new TestBoard("testdata/fourDiagonal3.txt").board;
-
-        GameState noFour = new TestBoard("testdata/noFourInLine.txt").board;
-        assertEquals(fourDiagonal(bluePiece, fourDiagonalBoard), true);
-        assertEquals(fourDiagonal(bluePiece, noFour), false);
-        assertEquals(fourDiagonal(redPiece, fourDiagonalBoard), false);
-        assertEquals(fourDiagonal(redPiece, fd2), true);
-        assertEquals(fourDiagonal(bluePiece, fd3), true);
-    }
+//    @Test
+//    public void testFourDiagonal() {
+//        GameState fourDiagonalBoard = new TestBoard("testdata/fourDiagonal.txt").board;
+//        GameState fd2 = new TestBoard("testdata/fourDiagonal2.txt").board;
+//        GameState fd3 = new TestBoard("testdata/fourDiagonal3.txt").board;
+//
+//        GameState noFour = new TestBoard("testdata/noFourInLine.txt").board;
+//        assertEquals(fourDiagonal(bluePiece, fourDiagonalBoard), true);
+//        assertEquals(fourDiagonal(bluePiece, noFour), false);
+//        assertEquals(fourDiagonal(redPiece, fourDiagonalBoard), false);
+//        assertEquals(fourDiagonal(redPiece, fd2), true);
+//        assertEquals(fourDiagonal(bluePiece, fd3), true);
+//    }
 //
 //    @Test
 //    public void testFourInALine() {
@@ -192,20 +189,20 @@ public class GameTest {
 //        GameState fourDiag = new TestBoard("testdata/fourDiagonal.txt").board;
 //        assertEquals(winner(fourDiag), Optional.of(bluePlayer));
 //    }
-//    @Test
-//    public void testComputerPlayer() {
-//        GameState blueAboutToWin = new TestBoard("testdata/blueAboutToWin.txt").board;
-//        ColumnNum aiBlockCol = aiMove(4, redPlayer).apply(blueAboutToWin);
-//        GameState gameAfterAiMove = dropPiece(blueAboutToWin, aiBlockCol, pieceOf(redPlayer));
-//        GameState gameAfterHuman = dropPiece(gameAfterAiMove, new ColumnNum(2), pieceOf(bluePlayer));
-//        assertEquals(winner(gameAfterHuman), Optional.empty()); // computer should block
-//        ColumnNum aiWinCol = aiMove(4, bluePlayer).apply(blueAboutToWin);
-//        GameState gameafterAiWinMove = dropPiece(blueAboutToWin, aiWinCol, pieceOf(bluePlayer));
-//        assertEquals(winner(gameafterAiWinMove), Optional.of(bluePlayer)); // computer should win
-//    }
-//
-//
-//
+    @Test
+    public void testComputerPlayer() {
+        GameState blueAboutToWin = new TestBoard("testdata/blueAboutToWin.txt").board;
+        ColumnNum aiBlockCol = aiMove(4, redPlayer).apply(blueAboutToWin);
+        GameState gameAfterAiMove = dropPiece(blueAboutToWin, aiBlockCol, pieceOf(redPlayer));
+        GameState gameAfterHuman = dropPiece(gameAfterAiMove, new ColumnNum(2), pieceOf(bluePlayer));
+        assertEquals(winner(gameAfterHuman), Optional.empty()); // computer should block
+        ColumnNum aiWinCol = aiMove(4, bluePlayer).apply(blueAboutToWin);
+        GameState gameafterAiWinMove = dropPiece(blueAboutToWin, aiWinCol, pieceOf(bluePlayer));
+        assertEquals(winner(gameafterAiWinMove), Optional.of(bluePlayer)); // computer should win
+    }
+
+
+
     class TestBoard {
         String strRep;
         GameState board;
