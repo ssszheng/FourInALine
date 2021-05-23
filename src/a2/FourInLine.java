@@ -1,11 +1,15 @@
 package a2;
 
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static a2.FourInLine.redPlayer;
+import a2.FourInLine.Column;
+
+import static a2.FourInLine.showGameState;
 import static java.util.stream.Collectors.*;
 
 public class FourInLine {
@@ -59,10 +63,11 @@ public class FourInLine {
 			List<Column> c = g.stream().map(Column::new).collect(toList());
 			this.addAll(c);
 		}
+		
 	}
 
-	// ColumnNums are 1-based, but list indices are 0-based. indexOfColumn converts
-	// a ColumnNum to a list index.
+	// ColumnNums are 1-based, but list indices are 0-based.
+	//indexOfColumn converts a ColumnNum to a list index.
 
 	public static class ColumnNum {
 		int index;
@@ -88,8 +93,9 @@ public class FourInLine {
 	//
 
 	public static String showColumn(Column xs) {
-		String s = xs.stream().map(e -> e.toString()).reduce("", String::concat);
-		return s; // replace this with implementation
+		String s = Stream.concat(IntStream.range(0, NRows-xs.size()).mapToObj(i -> " "), 
+				xs.stream().map(Piece::toString)).collect(joining());
+		return s; 
 	}
 
 	//
@@ -108,26 +114,34 @@ public class FourInLine {
 	// List(3,6))
 
 	public static String showGameState(GameState xs) {
-		// replace this with implementation
-		List<Column> transposedCol = (List<Column>) IntStream.range(0, xs.get(0).size())
-				.mapToObj(i -> new Column(xs.stream().map(l -> (l.get(i))).collect(Collectors.toList())))
-				.collect(Collectors.toList());
-		
-		String s = transposedCol.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining("\n"));
-		return s;
+	     // add each column with space,  
+         List<char[]> colWithSpaces = xs.stream().map(c -> showColumn(c).toCharArray()).collect(Collectors.toList());
+         
+         
+		 List<List<Character>> transposedCol = IntStream.range(0, NRows)
+		         .mapToObj(i -> colWithSpaces.stream().map(l -> l[i]).collect(Collectors.toList()))
+		         .collect(Collectors.toList());
+ 
+        // convert list of list to string, add space between characters, 
+		 //remove the last space in each line to match the test sample
+		 String s = transposedCol.stream()
+				 .map(row -> {
+					 String rowStr = row.stream().map(e -> e.toString()).reduce("", (a,b) -> a+b+" ");
+				     return rowStr.substring(0, rowStr.length() - 1);
+				 }).collect(Collectors.joining("\n"));
 
-	}
+		 return s;
+         }
 
 	// Which pieces belong to which players?
 
 	public static Piece pieceOf(Player player) {
-		
+
 		if (player.toString() == "Red Player") {
 			return redPiece;
-			}else {
-			return bluePiece;} // replace this with implementation
+		} else {
+			return bluePiece;
+		} // replace this with implementation
 
 	}
 
@@ -136,18 +150,20 @@ public class FourInLine {
 	public static Player otherPlayer(Player player) {
 		if (player.toString() == "Red Player") {
 			return bluePlayer;
-			}else {
-			return redPlayer;} // replace this with implementation
+		} else {
+			return redPlayer;
+		} 
 
 	}
 
 	// Given a piece, what is the colour of the other player's pieces?
 
 	public static Piece otherPiece(Piece piece) {
-		if (piece.toString() == "Red Player") {
+		if (piece.toString() == "r") {
+			return bluePiece;
+		} else {
 			return redPiece;
-			}else {
-			return bluePiece;} // replace this with implementation
+		} // replace this with implementation
 
 	}
 
@@ -155,50 +171,79 @@ public class FourInLine {
 	// number of columns
 
 	public static GameState initGameState() {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
+//		Piece emptyPiece = new Piece("") {};
+		
+//		List<Piece> emptyCol = IntStream.range(0,NRows)
+//				.mapToObj(m -> new Piece("") {}).collect(Collectors.toList());
+		
+		List<List<Piece>> columnList = IntStream.range(0,NColumns)
+				.mapToObj(n -> new Column())
+				.collect(Collectors.toList());
 
+		
+		GameState gs = new GameState(columnList); 
+        return gs;
+        
 	}
 
 	// Check if a column number is valid (i.e. in range)
 
 	public static boolean isValidColumn(ColumnNum c) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
+		
+		Predicate<ColumnNum> pr = a -> (0 < a.index && a.index <= NColumns); // Creating predicate  
+        return pr.test(c);   // Calling Predicate method 
+		
 	}
 
 	// Check if a column is full (a column can hold at most nRows of pieces)
 
 	public static boolean isColumnFull(Column column) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
+		
+		Predicate<Column> pr = a -> (a.size() == NRows); 
+		
+        return pr.test(column);  
 	}
 
 	// Return a list of all the columns which are not full (used by the AI)
 
 	public static List<ColumnNum> allViableColumns(GameState game) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
+		List<ColumnNum> cn = IntStream.range(0, game.size())
+				.filter(i -> !isColumnFull(game.get(i)))
+				.mapToObj(m -> new ColumnNum(m+1))
+				.collect(Collectors.toList());
+		return cn;
 
 	}
 
 	// Check if the player is able to drop a piece into a column
 
 	public static boolean canDropPiece(GameState game, ColumnNum columnN) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
+		List<ColumnNum> cn = allViableColumns(game);
+		boolean result = cn.stream().anyMatch(t -> t.indexOfColumn() == columnN.indexOfColumn());
+		return result;
 	}
 
 	// Drop a piece into a numbered column, resulting in a new gamestate
-
+	// always add a piece to the TOP of a column(first of the list)
 	public static GameState dropPiece(GameState game, ColumnNum columnN, Piece piece) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
-
+		if (canDropPiece(game,columnN)){
+			game.get(columnN.indexOfColumn()).add(0, piece);	
+		}
+		return game;
 	}
 
 	// Are there four pieces of the same colour in a column?
 
 	static boolean fourInCol(Piece piece, Column col) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
+		List<Piece> pieces4List= IntStream.range(0, 4).mapToObj(i -> piece).collect(Collectors.toList());
+		if (Collections.indexOfSubList(col, pieces4List) != -1) { 
+			return true;
+			}
+        return false;	
 	}
-
+	
 	public static boolean fourInColumn(Piece piece, GameState game) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
+		return game.stream().filter(col -> fourInCol(piece, col)).count() > 0;
 	}
 
 	// transposes gameboard, assumes all columns are full
@@ -212,15 +257,21 @@ public class FourInLine {
 	// easier to define.
 
 	static Column fillBlank(Piece piece, Column column) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
-
+		IntStream.range(0, NRows - column.size()).forEach(i -> column.add(0, piece));
+ 
+		return column;
 	}
 
 	// Are there four pieces of the same colour in a row? Hint: use fillBlanks and
 	// transpose to reduce the problem to fourInColumn
 
 	public static boolean fourInRow(Piece piece, GameState game) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
+		Piece blank = new Piece("") {};
+		List<Column> clist = game.stream().map(c -> fillBlank(blank, c)).collect(Collectors.toList());		
+		GameState gs = new GameState();
+		gs.addAll(clist);
+		GameState gt = transpose(gs);
+		return fourInColumn(piece, gt);
 	}
 
 	// Another helper function for fourInDiagonal. Remove n pieces from the top of
@@ -228,7 +279,10 @@ public class FourInLine {
 	// bottom to make up the difference. This makes fourDiagonal easier to define.
 
 	static Column shift(int n, Piece piece, Column column) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
+		IntStream.range(0, n).forEach(i-> column.remove(piece));
+		Piece blank = new Piece("") {};
+		IntStream.range(0, n).forEach(i-> column.add(-1,blank));
+		return column;
 	}
 
 	// Are there four pieces of the same colour diagonally? Hint: define a helper
