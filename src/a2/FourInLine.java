@@ -235,11 +235,21 @@ public class FourInLine {
 	// Are there four pieces of the same colour in a column?
 
 	static boolean fourInCol(Piece piece, Column col) {
-		List<Piece> pieces4List= IntStream.range(0, 4).mapToObj(i -> piece).collect(Collectors.toList());
-		if (Collections.indexOfSubList(col, pieces4List) != -1) { 
-			return true;
-			}
-        return false;	
+//		List<Piece> pieces4List= IntStream.range(0, 4).mapToObj(i -> piece).collect(Collectors.toList());
+//		if (Collections.indexOfSubList(col, pieces4List) != -1) { 
+//		return true;
+//		}
+	
+		List<Integer> idxList= IntStream.range(0,col.size())
+				                    .filter(i-> col.get(i).toString().equals(piece.toString())).boxed()
+				                    .collect(Collectors.toCollection(ArrayList::new));
+		
+		if (idxList.stream().count() <4) {
+			return false;
+		}
+	   //check if in consecutive order
+		return IntStream.range(0,idxList.size()-1).allMatch(i -> idxList.get(i)+1 == idxList.get(i+1));
+		
 	}
 	
 	public static boolean fourInColumn(Piece piece, GameState game) {
@@ -257,8 +267,9 @@ public class FourInLine {
 	// easier to define.
 
 	static Column fillBlank(Piece piece, Column column) {
+		if (NRows == column.size()) {return column;}
 		IntStream.range(0, NRows - column.size()).forEach(i -> column.add(0, piece));
- 
+        
 		return column;
 	}
 
@@ -268,9 +279,11 @@ public class FourInLine {
 	public static boolean fourInRow(Piece piece, GameState game) {
 		Piece blank = new Piece("") {};
 		List<Column> clist = game.stream().map(c -> fillBlank(blank, c)).collect(Collectors.toList());		
+		
 		GameState gs = new GameState();
 		gs.addAll(clist);
 		GameState gt = transpose(gs);
+
 		return fourInColumn(piece, gt);
 	}
 
@@ -279,9 +292,10 @@ public class FourInLine {
 	// bottom to make up the difference. This makes fourDiagonal easier to define.
 
 	static Column shift(int n, Piece piece, Column column) {
-		IntStream.range(0, n).forEach(i-> column.remove(piece));
-		Piece blank = new Piece("") {};
-		IntStream.range(0, n).forEach(i-> column.add(-1,blank));
+		if(n == 0) {return column;}
+		IntStream.range(0, n).forEach(i-> column.remove(0));
+//		Piece blank = new Piece("") {};
+		IntStream.range(0, n).forEach(i-> column.add(piece));
 		return column;
 	}
 
@@ -290,11 +304,53 @@ public class FourInLine {
 	// fourInRow.
 
 	static boolean fourDiagonalHelper(GameState g, Piece piece) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
-	}
+		//base case : if remaining columns < 4 
+		boolean result = false;
+		if (g.size() < 4) {
+			return result;
+		}else {
+			//deep copy
+			List<Column> copy1 = g.stream()
+					.map(col -> new Column(col.stream().map(p -> new Piece(p.toString()) {}).collect(Collectors.toList())))
+					.collect(Collectors.toList());
+			
+			List<Column> copy2 =  g.stream()
+					.map(col -> new Column(col.stream().map(p -> new Piece(p.toString()) {}).collect(Collectors.toList())))
+					.collect(Collectors.toList());
+			
+		   //else: anti-diagonal- for the first four columns, first col up shifts  3, second up 2, third up 1
+			List<Column> c1 = IntStream.range(0, 4).mapToObj(i -> shift(3-i, new Piece("") {}, copy1.get(i))).collect(Collectors.toList());
+			
+			
+			GameState gs = new GameState();
+			gs.addAll(c1);
+			boolean case1 = fourInRow(piece, gs);
+			
+			//else: main diagonal -for the first four columns, first col no move, second up 1, third up 2, forth up 3
+			List<Column> c2 = IntStream.range(0, 4).mapToObj(i -> shift(i, new Piece("") {}, copy2.get(i))).collect(Collectors.toList());
+		
+			GameState gs2 = new GameState();
+			gs2.addAll(c2);
+			boolean case2 = fourInRow(piece, gs2);
+			
+			if (case1 == false && case2 == false) {
+				g.remove(0);
+				result = fourDiagonalHelper(g,piece);
+				
+			}else if (case1 == true || case2 == true){
+				result = true;
+			}
+			}
+		return result;
+		}
 
 	public static boolean fourDiagonal(Piece piece, GameState game) {
-		throw new RuntimeException("Missing implementation!"); // replace this with implementation
+		//make gamestate to full columns 
+		Piece blank = new Piece("") {};
+		List<Column> clist = game.stream().map(c -> fillBlank(blank, c)).collect(Collectors.toList());		
+		GameState gs = new GameState();
+		gs.addAll(clist);
+		return fourDiagonalHelper(gs, piece);
 	}
 
 	// Are there four pieces of the same colour in a line (in any direction)
