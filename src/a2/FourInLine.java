@@ -115,6 +115,7 @@ public class FourInLine {
 
 	public static String showGameState(GameState xs) {
 	     // add each column with space,  
+		 
          List<char[]> colWithSpaces = xs.stream().map(c -> showColumn(c).toCharArray()).collect(Collectors.toList());
          
          
@@ -129,7 +130,7 @@ public class FourInLine {
 					 String rowStr = row.stream().map(e -> e.toString()).reduce("", (a,b) -> a+b+" ");
 				     return rowStr.substring(0, rowStr.length() - 1);
 				 }).collect(Collectors.joining("\n"));
-
+         System.out.println(s);
 		 return s;
          }
 
@@ -228,6 +229,7 @@ public class FourInLine {
 	public static GameState dropPiece(GameState game, ColumnNum columnN, Piece piece) {
 		if (canDropPiece(game,columnN)){
 			game.get(columnN.indexOfColumn()).add(0, piece);	
+			
 		}
 		return game;
 	}
@@ -278,7 +280,13 @@ public class FourInLine {
 
 	public static boolean fourInRow(Piece piece, GameState game) {
 		Piece blank = new Piece("") {};
-		List<Column> clist = game.stream().map(c -> fillBlank(blank, c)).collect(Collectors.toList());		
+		
+		//deep copy.not alter original game state
+		List<Column> copy = game.stream()
+				.map(col -> new Column(col.stream().map(p -> new Piece(p.toString()) {}).collect(Collectors.toList())))
+				.collect(Collectors.toList());
+		
+		List<Column> clist = copy.stream().map(c -> fillBlank(blank, c)).collect(Collectors.toList());		
 		
 		GameState gs = new GameState();
 		gs.addAll(clist);
@@ -347,7 +355,12 @@ public class FourInLine {
 	public static boolean fourDiagonal(Piece piece, GameState game) {
 		//make gamestate to full columns 
 		Piece blank = new Piece("") {};
-		List<Column> clist = game.stream().map(c -> fillBlank(blank, c)).collect(Collectors.toList());		
+		//deep copy.not alter original game state
+		List<Column> copy = game.stream()
+				.map(col -> new Column(col.stream().map(p -> new Piece(p.toString()) {}).collect(Collectors.toList())))
+				.collect(Collectors.toList());
+		
+		List<Column> clist = copy.stream().map(c -> fillBlank(blank, c)).collect(Collectors.toList());		
 		GameState gs = new GameState();
 		gs.addAll(clist);
 		return fourDiagonalHelper(gs, piece);
@@ -356,12 +369,17 @@ public class FourInLine {
 	// Are there four pieces of the same colour in a line (in any direction)
 
 	public static boolean fourInALine(Piece piece, GameState game) {
-		//check diagonal 
-		boolean diagonal = fourDiagonal(piece,game);
-		//row
-		boolean row = fourInRow(piece,game);
-		//column
+		
+	
 		boolean col = fourInColumn(piece,game);
+		
+		boolean row = fourInRow(piece,game);
+		
+		boolean diagonal = fourDiagonal(piece,game);
+		
+
+		
+	
 		if(diagonal== true||row == true ||col ==true) {
 			return true;
 		}return false;
