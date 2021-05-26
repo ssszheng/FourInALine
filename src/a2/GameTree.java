@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
+
 
 import a2.FourInLine.Column;
 import a2.FourInLine.GameState;
@@ -90,24 +90,20 @@ public class GameTree {
          else if (fourInALine(pieceOf(otherPlayer(player)), game))
             return -100;
        
-        
         // 3 pieces in line
-//         else if (threeInALine(pieceOf(otherPlayer(player)), game))
-//            return -90;
-//        else if (threeInALine(pieceOf(player), game))
-//           return 90;
-////     
-////        
-////      
-////        
-//        //placing pieces in the center columns 
-//        else if (centerCol(pieceOf(player), game)){
-//        	return 50;
-//        }
-//        //opponent; placing pieces in the center columns 
-//        else if (centerCol(pieceOf(otherPlayer(player)), game)){
-//        	return -50;
-//        }
+        else if (threeInALine(pieceOf(otherPlayer(player)), game))
+            return -90;
+        else if (threeInALine(pieceOf(player), game))
+           return 90;
+     
+        //placing pieces in the center columns 
+        else if (centerCol(pieceOf(player), game)){
+        	return 50;
+        }
+        //opponent; placing pieces in the center columns 
+        else if (centerCol(pieceOf(otherPlayer(player)), game)){
+        	return -50;
+        }
         
         else
             return 0;
@@ -121,26 +117,46 @@ public class GameTree {
     	//column.
     	// no opponent on its top
     	List<Piece> piecesThree = IntStream.range(0, 3).mapToObj(i -> piece).collect(toList());
-    	boolean col =  game.stream()
+    	//deep copy.
+    	List<Column> copy1 = game.stream()
+    					.map(col -> new Column(col.stream().map(p -> new Piece(p.toString()) {}).collect(Collectors.toList())))
+    					.collect(Collectors.toList());
+    	GameState gs1 = new GameState();
+		gs1.addAll(copy1);
+    	boolean col =  gs1.stream()
     			.filter(n -> n.size()>=3)
     			.map(c -> c.stream().limit(3).collect(toList()))
     			.anyMatch(i -> i.stream() == piecesThree.stream());
-    	System.out.println(col);	
-    					
-    			
-    		
-    		
-//    			piece: [r, r, B]
-//    		    .forEach(i -> System.out.println("piece: "+i.limit(3).collect(toList())));
+
+		// piece: [r, r, B]
+		//.forEach(i -> System.out.println("piece: "+i.limit(3).collect(toList())));
     	
-    	//row 
-    	// fill blank, transpose, check column
-    	boolean row = false;
+    	//row, 
+    	//three in a line     
+		//deep copy
+		List<Column> copy2 = game.stream()
+				.map(c -> new Column(c.stream().map(p -> new Piece(p.toString()) {}).collect(Collectors.toList())))
+				.collect(Collectors.toList());
+		// fill blank, transpose , check column contains expected piece list
+		Piece blank = new Piece("") {};
+		List<Column> clist = copy2.stream().map(c -> fillBlank(blank, c)).collect(Collectors.toList());		
+		GameState gs2 = new GameState();
+		gs2.addAll(clist);
+		GameState gt2 = transpose(gs2);
+    	boolean row = gt2.stream().anyMatch(i -> Collections.indexOfSubList(i, piecesThree) != -1);
+    	//diagonal, gt2 not altered, can still use it
+    	List<Boolean> bl = IntStream.range(0, NColumns-3)
+    			.mapToObj(i -> IntStream.range(1, NRows-3)
+    					.anyMatch(j-> gt2.get(i).get(j) == gt2.get(i+1).get(j+1)
+    					&& gt2.get(i+2).get(j+2) == gt2.get(i+1).get(j+1))).collect(Collectors.toList());
+    	//anti-diagonal
+     	List<Boolean> bl2 = IntStream.range(0, NColumns-3)
+    			.mapToObj(i -> IntStream.range(1, NRows-3)
+    					.anyMatch(j-> gt2.get(i).get(NRows-j) == gt2.get(i+1).get(NRows-j-1)
+    					&& gt2.get(i+2).get(NRows-j-2) == gt2.get(i).get(NRows-j))).collect(Collectors.toList());
+    	boolean diagonal = bl.contains(true) || bl2.contains(true);
+       
     	
-    	
-    	
-    	//diagonal
-    	boolean diagonal =false;
     	if (col == true ||row == true || diagonal == true) {
     		return true;
     	}

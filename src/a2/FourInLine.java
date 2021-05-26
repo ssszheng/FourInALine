@@ -130,7 +130,7 @@ public class FourInLine {
 					 String rowStr = row.stream().map(e -> e.toString()).reduce("", (a,b) -> a+b+" ");
 				     return rowStr.substring(0, rowStr.length() - 1);
 				 }).collect(Collectors.joining("\n"));
-         System.out.println(s);
+//         System.out.println(s);
 		 return s;
          }
 
