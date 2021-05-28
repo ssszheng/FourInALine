@@ -121,9 +121,10 @@ public class GameTest {
     @Test
     public void testAllViableCols() {
         GameState fullBoard = (new TestBoard("testdata/fullBoard.txt")).board;
-        
+       
         assertEquals(allViableColumns(fullBoard).isEmpty(), true);
         GameState notFullBoard = (new TestBoard("testdata/redWinsRow.txt")).board;
+        System.err.println(allViableColumns(notFullBoard));
         assertEquals(allViableColumns(notFullBoard).size(), 6);
     }
     @Test

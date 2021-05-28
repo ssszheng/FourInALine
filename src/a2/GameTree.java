@@ -34,13 +34,13 @@ public class GameTree {
     }
 
     static Move subGameTree(GameState game, ColumnNum c, Player player, int depth) {
-    	//deep copy.not alter original game state
-    	List<Column> copy = game.stream()
-    					.map(col -> new Column(col.stream().map(p -> new Piece(p.toString()) {}).collect(Collectors.toList())))
-    					.collect(Collectors.toList());
-    	GameState gs = new GameState();
-		gs.addAll(copy);
-        return new Move(c, gameTree(otherPlayer(player),depth - 1, dropPiece(gs, c, pieceOf(player))));
+    	
+//    	List<Column> copy = game.stream()
+//    					.map(col -> new Column(col.stream().map(p -> new Piece(p.toString()) {}).collect(Collectors.toList())))
+//    					.collect(Collectors.toList());
+//    	GameState gs = new GameState();
+//		gs.addAll(copy);
+        return new Move(c, gameTree(otherPlayer(player),depth - 1, dropPiece(game, c, pieceOf(player))));
     }
 
     // Recursively build the game tree using allViableColumns to get all possible

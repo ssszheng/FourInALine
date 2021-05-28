@@ -106,11 +106,11 @@ public class Game  {
             if (!isValidColumn(c.get()))  {
                 System.out.println("No such column, try again.");
                 System.out.println("Enter column number: ");
-                return getMove(); //<---------HERE
+                return getMove(); 
             }
         } else {
             System.out.println("That wasn't a number. Enter column number: ");
-            return getMove(); //<---------HERE
+            return getMove(); 
         }
         return c.get();
     }

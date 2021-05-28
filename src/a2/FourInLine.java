@@ -228,8 +228,22 @@ public class FourInLine {
 	// always add a piece to the TOP of a column(first of the list)
 	public static GameState dropPiece(GameState game, ColumnNum columnN, Piece piece) {
 		if (canDropPiece(game,columnN)){
-			game.get(columnN.indexOfColumn()).add(0, piece);	
+
+	
+//			List<Piece> updated= Stream.concat(Stream.of(piece), game.get(columnN.indexOfColumn()).stream())
+//	          .collect(Collectors.toList());
 			
+//	stream will return a new game, but array add() will not 
+			
+			List<List<Piece>> newGame = game.stream()
+					.map(c -> {
+						if (c == game.get(columnN.indexOfColumn())) {
+							return Stream.concat(Stream.of(piece), c.stream()).collect(toList());
+					    }
+						return c;})
+					.collect(toList());
+
+		return new GameState(newGame);
 		}
 		return game;
 	}
