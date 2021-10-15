@@ -1,4 +1,4 @@
-## four-in-line game 
+## Four-in-line game 
 
 A two-player connection game in which the players ﬁrst choose a color and then take turns
 dropping colored discs into a seven-column, six-row, vertically suspended grid. The pieces fall
